@@ -9,275 +9,275 @@
 <script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 
 <style>
-:root {
-  --bg: #f7f2f6;
-  --card: #fff;
-  --text: #000;
-  --primary-btn: #0d6efd;
-  --secondary-btn: #6c757d;
+:root{
+  --bg:#f7f2f6;--card:#fff;--text:#000;
 }
-body.dark {
-  --bg: #121212;
-  --card: #1e1e1e;
-  --text: #fff;
-  --primary-btn: #4e9af1;
-  --secondary-btn: #495057;
+body.dark{
+  --bg:#121212;--card:#1e1e1e;--text:#fff;
 }
-body {
-  background: var(--bg);
-  color: var(--text);
-  font-family: 'Segoe UI', sans-serif;
-  margin:0;
-  padding:0;
+body{
+  background:var(--bg);
+  color:var(--text);
+  font-family:'Segoe UI',sans-serif;
 }
+.container{
+  max-width:1000px;
+  margin:20px auto;
+  background:var(--card);
+  padding:20px;
+  border-radius:12px;
+  box-shadow:0 5px 15px rgba(0,0,0,.1);
+}
+.table-scroll{max-height:320px;overflow:auto;}
+thead th{position:sticky;top:0;background:var(--card);z-index:2;}
 
-.container {
-  max-width: 980px;
-  margin:auto;
-  background: var(--card);
-  padding: 20px;
-  border-radius: 12px;
-  box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-  margin-top: 20px;
-  margin-bottom: 20px;
-}
+.badge-koli18{background:#0d6efd;}
+.badge-plastic{background:#ffc107;}
+.badge-sisa{background:#198754;color:#000;}
 
-h3 {
-  font-weight: bold;
-}
-
-.table-scroll {
-  max-height: 300px;
-  overflow-y: auto;
-  border-radius: 8px;
-}
-
-.table-scroll thead th {
-  position: sticky;
-  top: 0;
-  z-index: 2;
-  background-color: var(--card);
-}
-
-table { font-size: 14px; width: 100%; }
-td, th { vertical-align: middle; }
-
-textarea { width: 100%; padding: 8px; font-family: monospace; border-radius:8px; }
-
-.btn-custom {
-  flex: 1 1 120px;
-  margin-bottom: 6px;
-}
-.btn-group-wrap {
-  display:flex;
-  flex-wrap: wrap;
-  gap:8px;
-}
-
-.card-example img{
-  max-width:100%;
-  height:auto;
-  border-radius:8px;
-  display:block;
-  margin:auto;
+.summary-item{
+  padding:6px 12px;
+  border-radius:20px;
+  font-size:14px;
+  font-weight:500;
 }
 </style>
 </head>
+
 <body>
 <div class="container">
 
-<h3 class="text-center mb-4">📦 Generator Label Koli</h3>
-
-<div class="btn-group-wrap mb-3">
-  <button class="btn btn-secondary btn-custom" onclick="toggleTheme()">🌙 / ☀️</button>
-  <button class="btn btn-dark btn-custom" id="toggleInputMode">Mode TXT</button>
-  <button class="btn btn-success btn-custom" id="uploadBtn">Upload File</button>
-  <button class="btn btn-primary btn-custom" onclick="generateData()">Generate</button>
-  <button class="btn btn-warning btn-custom" onclick="exportExcel()">Export Excel</button>
-  <button class="btn btn-danger btn-custom" onclick="resetAll()">Reset</button>
+<div class="d-flex align-items-center justify-content-center mb-3 position-relative">
+  <!-- Tombol di kiri -->
+  <button class="btn btn-secondary position-absolute start-0" onclick="toggleTheme()">🌙 / ☀️</button>
+  
+  <!-- Judul di tengah -->
+  <h3 class="text-center m-0">📦 Generator Label Koli</h3>
+</div>
+<div class="d-flex flex-wrap gap-2 mb-3">
+  <button class="btn btn-dark" id="toggleInputMode">Mode TXT</button>
+  <button class="btn btn-success" onclick="fileInput.click()">Upload File</button>
   <button class="btn btn-info btn-custom" id="downloadTemplate">Unduh Template</button>
+  <button class="btn btn-primary" onclick="generateWithPlastic()">With Plastic Koli</button>
+  <button class="btn btn-warning" onclick="generateWithoutPlastic()">Tanpa Plastic Koli</button>
+  <button class="btn btn-info" onclick="exportExcel()">Export Excel</button>
+  <button class="btn btn-danger" onclick="resetAll()">Reset</button>
 </div>
 
-<input type="file" id="fileInput" accept=".csv,.txt,.xls,.xlsx,.ods" hidden>
+<!-- <input type="file" id="fileInput" hidden> -->
+ <input type="file" id="fileInput" accept=".xlsx,.xls,.csv,.txt, .ods" hidden>
 
-<!-- TEXTAREA MODE -->
-<div id="txtInputDiv" style="display:none; margin-bottom:16px;">
-  <textarea id="txtInput" rows="6" placeholder="ALOKASI 1,44&#10;ALOKASI 2,36"></textarea>
+<!-- TXT MODE -->
+<div id="txtInputDiv" style="display:none">
+<textarea id="txtInput" rows="5" class="form-control mb-3"
+placeholder="ALOKASI A,117&#10;ALOKASI B,23"></textarea>
 </div>
 
 <!-- TABLE MODE -->
-<h5>Input Alokasi</h5>
-<div class="table-scroll mb-3" id="tableInputDiv">
-<table class="table table-bordered table-striped" id="inputTable">
+<div id="tableInputDiv" class="table-scroll mb-3">
+<table class="table table-bordered">
 <thead class="table-primary">
-<tr>
-<th>Alokasi</th>
-<th width="120">Qty</th>
-</tr>
+<tr><th>Alokasi</th><th width="120">Qty</th></tr>
 </thead>
 <tbody>
 <tr>
-<td><input class="form-control" placeholder="ALOKASI 1"></td>
-<td><input type="number" class="form-control" placeholder="44"></td>
+<td><input class="form-control"></td>
+<td><input type="number" class="form-control"></td>
 </tr>
 </tbody>
 </table>
 </div>
 
-<h5>Hasil & Packing List</h5>
-<div class="table-scroll mb-3">
-<table class="table table-bordered table-striped" id="resultTable">
-<thead class="table-primary">
-<tr>
-<th>Alokasi</th>
-<th>Total</th>
-<th>Koli 18</th>
-<th>Plastik 5</th>
-<th>Koli Sisa</th>
-<th>Detail Packing</th>
-</tr>
-</thead>
+<div class="btn_tambah"><button class="btn btn-outline-primary" style="margin-bottom: 3%;" onclick="addTableRow()">➕ Tambah Baris</button></div>
+
+
+<!-- RESULT -->
+<div class="table-scroll">
+<table class="table table-bordered" id="resultTable">
+<thead></thead>
 <tbody></tbody>
 </table>
 </div>
 
-<p class="mt-2 text-muted"><b>📌 File harus berisi 2 kolom: Alokasi | Qty (tanpa header)</b></p>
-
-<div class="card card-example p-3 mt-3 mb-3">
-<h5 class="text-center">Contoh Isi File</h5>
-<img src="https://i.ibb.co.com/pj7XkWpj/example-image.png" alt="example">
+<!-- SUMMARY -->
+<div id="summaryBox" class="mt-3 p-3 rounded shadow-sm" style="display:none;">
+<h6 class="fw-bold">📊 Summary Packing</h6>
+<div id="summaryContent" class="d-flex flex-wrap gap-2"></div>
 </div>
 
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/xlsx/dist/xlsx.full.min.js"></script>
 <script>
-// VAR
-const fileInput = document.getElementById('fileInput');
-const txtInput = document.getElementById('txtInput');
-const uploadBtn = document.getElementById('uploadBtn');
-let mode = 'table';
-const toggleInputBtn = document.getElementById('toggleInputMode');
-const tableInputDiv = document.getElementById('tableInputDiv');
-const txtInputDiv = document.getElementById('txtInputDiv');
+let mode='table', lastMode=null;
+const txtInput=document.getElementById('txtInput');
+const tableInputDiv=document.getElementById('tableInputDiv');
+const txtInputDiv=document.getElementById('txtInputDiv');
+const toggleInputBtn=document.getElementById('toggleInputMode');
+const fileInput=document.getElementById('fileInput');
 
-// THEME
-function toggleTheme(){ document.body.classList.toggle('dark'); }
+/* THEME */
+function toggleTheme(){document.body.classList.toggle('dark');}
 
-// INPUT MODE
-toggleInputBtn.addEventListener('click', ()=>{
+/* INPUT MODE */
+toggleInputBtn.onclick=()=>{
   if(mode==='table'){
     tableInputDiv.style.display='none';
     txtInputDiv.style.display='block';
     toggleInputBtn.textContent='Mode Table';
     mode='txt';
-  } else {
+  }else{
     tableInputDiv.style.display='block';
     txtInputDiv.style.display='none';
     toggleInputBtn.textContent='Mode TXT';
     mode='table';
   }
-});
+};
 
-// FILE UPLOAD
-uploadBtn.addEventListener('click', ()=> fileInput.click());
-fileInput.addEventListener('change', handleFile);
-
-function handleFile(e){
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = evt=>{
-    const data = new Uint8Array(evt.target.result);
-    const wb = XLSX.read(data,{type:'array'});
-    const sheet = wb.Sheets[wb.SheetNames[0]];
-    const rows = XLSX.utils.sheet_to_json(sheet,{header:1});
-    fillInput(rows);
-  };
-  reader.readAsArrayBuffer(file);
-}
-
-function fillInput(rows){
-  const tbody = document.querySelector('#inputTable tbody');
-  tbody.innerHTML='';
-  rows.forEach(r=>{
-    if(!r[0] || isNaN(r[1])) return;
-    tbody.insertAdjacentHTML('beforeend',`
-      <tr>
-        <td><input class="form-control" value="${r[0]}"></td>
-        <td><input type="number" class="form-control" value="${r[1]}"></td>
-      </tr>
-    `);
-  });
-}
-
-// HITUNG KOLI
-function hitungKoli(qty){
-  const koli18 = Math.floor(qty/18);
-  let sisa = qty % 18;
-  const plastik5 = Math.floor(sisa/5);
-  sisa = sisa % 5;
-  return {koli18, plastik5, koliSisa:sisa>0?1:0, sisaQty:sisa};
-}
-
-function detailPacking(qty){
-  const h = hitungKoli(qty);
-  return `${h.koli18} koli x 18 = ${h.koli18*18}<br>${h.plastik5} plastik x 5 = ${h.plastik5*5}<br>Sisa eceran = ${h.sisaQty}`;
-}
-
-// GENERATE
-function generateData(){
-  const tbody = document.querySelector('#resultTable tbody');
-  tbody.innerHTML='';
+/* READ INPUT */
+function getInputRows(){
   let rows=[];
   if(mode==='table'){
-    document.querySelectorAll('#inputTable tbody tr').forEach(r=>{
-      const alokasi = r.cells[0].querySelector('input').value.trim();
-      const qty = parseInt(r.cells[1].querySelector('input').value);
-      if(alokasi && qty>0) rows.push({alokasi, qty});
+    document.querySelectorAll('#tableInputDiv tbody tr').forEach(r=>{
+      let a=r.cells[0].querySelector('input').value.trim();
+      let q=parseInt(r.cells[1].querySelector('input').value);
+      if(a && q>0) rows.push({alokasi:a,qty:q});
     });
-  } else {
-    txtInput.value.trim().split(/\r?\n/).forEach(line=>{
-      if(!line) return;
-      let parts = line.includes(',')? line.split(','):line.split(/\t/);
-      const alokasi = parts[0].trim();
-      const qty = parseInt(parts[1]);
-      if(alokasi && !isNaN(qty)) rows.push({alokasi, qty});
+  }else{
+    txtInput.value.trim().split(/\n/).forEach(l=>{
+      let p=l.split(',');
+      if(p[0] && p[1]) rows.push({alokasi:p[0].trim(),qty:parseInt(p[1])});
     });
   }
-  rows.forEach(r=>{
-    const h = hitungKoli(r.qty);
-    tbody.insertAdjacentHTML('beforeend',`
-      <tr>
-        <td>${r.alokasi}</td>
-        <td>${r.qty}</td>
-        <td>${h.koli18}</td>
-        <td>${h.plastik5}</td>
-        <td>${h.koliSisa}</td>
-        <td>${detailPacking(r.qty)}</td>
-      </tr>
-    `);
+  return rows;
+}
+
+/* CALC */
+function calcWithPlastic(q){
+  let k18=Math.floor(q/18);
+  let s=q%18;
+  let p5=Math.floor(s/5);
+  s=s%5;
+  return{
+    k18,p5,
+    sisa:s>0?1:0,
+    qk18:k18*18,
+    qp5:p5*5,
+    qs:s
+  };
+}
+function calcWithoutPlastic(q){
+  let k18=Math.floor(q/18);
+  let s=q%18;
+  return{
+    k18,
+    sisa:s>0?1:0,
+    qk18:k18*18,
+    qs:s
+  };
+}
+
+/* HEADER */
+function renderHeader(type){
+  const t=document.querySelector('#resultTable thead');
+  t.innerHTML= type==='with' ?
+`<tr class="table-primary">
+<th>Alokasi</th><th>Total</th><th>Koli 18</th>
+<th>Plastic 5</th><th>Koli Sisa</th>
+<th>Qty Koli 18</th><th>Qty Plastic</th><th>Qty Sisa</th>
+</tr>`:
+`<tr class="table-primary">
+<th>Alokasi</th><th>Total</th><th>Koli 18</th>
+<th>Koli Sisa</th><th>Qty Koli 18</th><th>Qty Sisa</th>
+</tr>`;
+}
+
+/* GENERATE */
+function generateWithPlastic(){
+  lastMode='with'; renderHeader('with');
+  const tb=document.querySelector('#resultTable tbody');
+  tb.innerHTML='';
+  let s18=0,sp5=0,ss=0;
+  getInputRows().forEach(r=>{
+    let h=calcWithPlastic(r.qty);
+    s18+=h.k18; sp5+=h.p5; ss+=h.sisa;
+    tb.insertAdjacentHTML('beforeend',`
+<tr>
+<td>${r.alokasi}</td><td>${r.qty}</td>
+<td><span class="badge badge-koli18">${h.k18}</span></td>
+<td><span class="badge badge-plastic">${h.p5}</span></td>
+<td><span class="badge badge-sisa">${h.sisa}</span></td>
+<td>${h.qk18}</td><td>${h.qp5}</td><td>${h.qs}</td>
+</tr>`);
   });
+  renderSummary([
+    {l:'Koli 18',v:s18,c:'badge-koli18'},
+    {l:'Plastic 5',v:sp5,c:'badge-plastic'},
+    {l:'Koli Sisa',v:ss,c:'badge-sisa'}
+  ]);
 }
 
-// EXPORT
+function generateWithoutPlastic(){
+  lastMode='without'; renderHeader('without');
+  const tb=document.querySelector('#resultTable tbody');
+  tb.innerHTML='';
+  let s18=0,ss=0;
+  getInputRows().forEach(r=>{
+    let h=calcWithoutPlastic(r.qty);
+    s18+=h.k18; ss+=h.sisa;
+    tb.insertAdjacentHTML('beforeend',`
+<tr>
+<td>${r.alokasi}</td><td>${r.qty}</td>
+<td><span class="badge badge-koli18">${h.k18}</span></td>
+<td><span class="badge badge-sisa">${h.sisa}</span></td>
+<td>${h.qk18}</td><td>${h.qs}</td>
+</tr>`);
+  });
+  renderSummary([
+    {l:'Koli 18',v:s18,c:'badge-koli18'},
+    {l:'Koli Sisa',v:ss,c:'badge-sisa'}
+  ]);
+}
+
+/* SUMMARY */
+function renderSummary(arr){
+  const box=document.getElementById('summaryBox');
+  const c=document.getElementById('summaryContent');
+  c.innerHTML='';
+  arr.forEach(i=>{
+    c.insertAdjacentHTML('beforeend',
+      `<div class="summary-item ${i.c}">${i.l}: ${i.v}</div>`
+    );
+  });
+  box.style.display='block';
+}
+
+/* AUTO RECALC */
+document.addEventListener('input',e=>{
+  if(e.target.closest('#tableInputDiv')||e.target===txtInput){
+    if(lastMode==='with') generateWithPlastic();
+    if(lastMode==='without') generateWithoutPlastic();
+  }
+});
+
+/* EXPORT */
 function exportExcel(){
-  const wb = XLSX.utils.book_new();
-  const ws = XLSX.utils.table_to_sheet(resultTable,{raw:true});
-  XLSX.utils.book_append_sheet(wb, ws,'Packing List');
-  XLSX.writeFile(wb,'packing_list.xlsx');
+  const wb=XLSX.utils.book_new();
+  const ws=XLSX.utils.table_to_sheet(resultTable,{raw:true});
+  XLSX.utils.book_append_sheet(wb,ws,'Packing');
+  XLSX.writeFile(wb,
+    lastMode==='with'?'packing_with_plastic.ods':'packing_without_plastic.ods'
+  );
 }
 
-// RESET
+/* RESET */
 function resetAll(){
-  document.querySelector('#inputTable tbody').innerHTML=`
-    <tr><td><input class="form-control"></td><td><input type="number" class="form-control"></td></tr>`;
+  document.querySelector('#tableInputDiv tbody').innerHTML=
+  `<tr><td><input class="form-control"></td><td><input type="number" class="form-control"></td></tr>`;
   document.querySelector('#resultTable tbody').innerHTML='';
-  fileInput.value='';
-  txtInput.value='';
+  document.querySelector('#resultTable thead').innerHTML='';
+  document.getElementById('summaryBox').style.display='none';
+  txtInput.value=''; lastMode=null;
 }
-
-// DOWNLOAD TEMPLATE
 document.getElementById('downloadTemplate').addEventListener('click', function() {
     // Data template 
     const data = [
@@ -293,6 +293,77 @@ document.getElementById('downloadTemplate').addEventListener('click', function()
 
     XLSX.writeFile(wb, "template_label.ods", { bookType: "ods" });
 });
+/* =========================
+   UPLOAD FILE (XLSX / XLS / CSV / ODS / TXT)
+   ========================= */
+fileInput.addEventListener('change', function (e) {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+
+  // TXT
+  if (file.name.endsWith('.txt')) {
+    reader.onload = () => {
+      txtInput.value = reader.result;
+      if (mode === 'table') toggleInputBtn.click();
+    };
+    reader.readAsText(file);
+    return;
+  }
+
+  // EXCEL / ODS
+  reader.onload = function (evt) {
+    const data = new Uint8Array(evt.target.result);
+    const wb = XLSX.read(data, { type: 'array' });
+
+    const sheetName = wb.SheetNames[0];
+    const ws = wb.Sheets[sheetName];
+
+    const rows = XLSX.utils.sheet_to_json(ws, {
+      header: 1,
+      defval: ''
+    });
+
+    // hapus header (baris pertama)
+    const cleanRows = rows.slice(1).filter(r => r[0] && r[1]);
+
+    if (mode === 'txt') {
+      txtInput.value = cleanRows.map(r => `${r[0]},${r[1]}`).join('\n');
+    } else {
+      const tbody = document.querySelector('#tableInputDiv tbody');
+      tbody.innerHTML = '';
+      cleanRows.forEach(r => {
+        tbody.insertAdjacentHTML('beforeend', `
+          <tr>
+            <td><input class="form-control" value="${r[0]}"></td>
+            <td><input type="number" class="form-control" value="${r[1]}"></td>
+          </tr>
+        `);
+      });
+    }
+
+    // auto recalc kalau sudah pernah generate
+    if (lastMode === 'with') generateWithPlastic();
+    if (lastMode === 'without') generateWithoutPlastic();
+  };
+
+  reader.readAsArrayBuffer(file);
+});
+
+function addTableRow(){
+  const tbody = document.querySelector('#tableInputDiv tbody');
+  tbody.insertAdjacentHTML('beforeend', `
+    <tr>
+      <td><input class="form-control"></td>
+      <td><input type="number" class="form-control"></td>
+    </tr>
+  `);
+
+  // auto recalc kalau sudah generate sebelumnya
+  if (lastMode === 'with') generateWithPlastic();
+  if (lastMode === 'without') generateWithoutPlastic();
+}
 </script>
 </body>
 </html>
